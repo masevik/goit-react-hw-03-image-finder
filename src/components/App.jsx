@@ -1,6 +1,15 @@
-// import { Component } from 'react';
-// import { Box } from './Box';
+import { Component } from 'react';
+import { Box } from './Box';
+import { Searchbar } from './Searchbar/Searchbar';
 
-export const App = () => {
-  return <div>React homework template</div>;
-};
+export class App extends Component {
+  state = {};
+
+  render() {
+    return (
+      <Box>
+        <Searchbar onSubmit={() => {}} />
+      </Box>
+    );
+  }
+}
