@@ -5,16 +5,38 @@ import { ImageGallery } from './ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem';
 import { fetchImages } from './api/getImage';
 import { Button } from './Button';
+import { toast } from 'react-toastify';
+import { Loader } from './Loader';
 
 export class App extends Component {
-  state = { query: '', page: 1, images: [], totalPages: 0, error: null };
+  state = {
+    query: '',
+    page: 1,
+    images: [],
+    totalPages: 0,
+    error: null,
+    isLoading: false,
+  };
+
+  errorMessage = () =>
+    toast.error('Something went wrong. Please try again', {
+      position: 'top-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+    });
 
   onSubmitSearch = value => {
     this.setState(value);
-    this.setState({ page: 1, images: [] });
+    this.setState({ page: 1, images: [], isLoading: true });
   };
 
   onLoadMore = () => {
+    this.setState({ isLoading: true });
     this.setState(prevState => {
       return { page: prevState.page + 1 };
     });
@@ -28,15 +50,21 @@ export class App extends Component {
       if (isQueryChanged || isPageChanged) {
         const response = await fetchImages(this.state.query, this.state.page);
         const totalPages = Math.ceil(response.totalHits / 12);
-        const currentPages = [...this.state.images, ...response.hits];
 
         this.setState({
-          images: currentPages,
+          images: [...this.state.images, ...response.hits],
           totalPages,
         });
       }
     } catch (error) {
       this.setState({ error: 'Something went wrong. Please try again' });
+      this.errorMessage();
+    } finally {
+      const isLoaderChanged = prevState.isLoading !== this.state.isLoading;
+
+      if (!isLoaderChanged) {
+        this.setState({ isLoading: false });
+      }
     }
   };
 
@@ -58,7 +86,7 @@ export class App extends Component {
           this.state.page < this.state.totalPages && (
             <Button onClick={this.onLoadMore}>Load more</Button>
           )}
-        {this.state.error && <p>{this.state.error}</p>}
+        {this.state.isLoading && <Loader />}
       </Box>
     );
   }
