@@ -26,11 +26,10 @@ export class App extends Component {
 
       if (isQueryChanged || isPageChanged) {
         const response = await fetchImages(query, page);
-        const totalPages = Math.ceil(response.totalHits / 12);
 
         this.setState({
-          images: [...images, ...response.hits],
-          totalPages,
+          images: [...images, ...response.images],
+          totalPages: response.totalPages,
         });
       }
     } catch (error) {
@@ -59,7 +58,7 @@ export class App extends Component {
 
   onSubmitSearch = value => {
     this.setState(value);
-    this.setState({ page: 1, images: [], isLoading: true });
+    this.setState({ page: 1, images: [], isLoading: true, error: null });
   };
 
   onLoadMore = () => {

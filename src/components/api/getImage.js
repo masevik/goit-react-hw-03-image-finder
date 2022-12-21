@@ -12,6 +12,23 @@ export async function fetchImages(query, page = 1) {
       page: page,
     },
   };
-  const response = await axios.get(`?q=${query}`, params);
-  return response.data;
+  const { data } = await axios.get(`?q=${query}`, params);
+  const images = getNormalizeImages(data.hits);
+  const totalPages = Math.ceil(data.totalHits / params.params.per_page);
+
+  return { images, totalPages };
 }
+
+const getNormalizeImages = images => {
+  const normalizedImages = images.map(
+    ({ id, webformatURL, largeImageURL, tags }) => {
+      const item = {};
+      item['id'] = id;
+      item['webformatURL'] = webformatURL;
+      item['largeImageURL'] = largeImageURL;
+      item['tags'] = tags;
+      return item;
+    }
+  );
+  return normalizedImages;
+};
