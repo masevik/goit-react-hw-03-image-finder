@@ -18,16 +18,18 @@ export class App extends Component {
   };
 
   componentDidUpdate = async (_, prevState) => {
+    const { query, page, images, isLoading } = this.state;
+
     try {
-      const isQueryChanged = prevState.query !== this.state.query;
-      const isPageChanged = prevState.page !== this.state.page;
+      const isQueryChanged = prevState.query !== query;
+      const isPageChanged = prevState.page !== page;
 
       if (isQueryChanged || isPageChanged) {
-        const response = await fetchImages(this.state.query, this.state.page);
+        const response = await fetchImages(query, page);
         const totalPages = Math.ceil(response.totalHits / 12);
 
         this.setState({
-          images: [...this.state.images, ...response.hits],
+          images: [...images, ...response.hits],
           totalPages,
         });
       }
@@ -35,7 +37,7 @@ export class App extends Component {
       this.setState({ error: 'Something went wrong. Please try again' });
       this.errorMessage();
     } finally {
-      const isLoaderChanged = prevState.isLoading !== this.state.isLoading;
+      const isLoaderChanged = prevState.isLoading !== isLoading;
 
       if (!isLoaderChanged) {
         this.setState({ isLoading: false });
@@ -68,6 +70,8 @@ export class App extends Component {
   };
 
   render() {
+    const { query, page, images, isLoading, totalPages } = this.state;
+
     return (
       <Box
         display="grid"
@@ -76,14 +80,11 @@ export class App extends Component {
         paddingBottom="24px"
       >
         <Searchbar onSubmit={this.onSubmitSearch} />
-        {this.state.query !== '' && (
-          <ImageGallery images={this.state.images}></ImageGallery>
+        {query !== '' && <ImageGallery images={images}></ImageGallery>}
+        {images.length > 0 && page < totalPages && (
+          <Button onClick={this.onLoadMore}>Load more</Button>
         )}
-        {this.state.images.length > 0 &&
-          this.state.page < this.state.totalPages && (
-            <Button onClick={this.onLoadMore}>Load more</Button>
-          )}
-        {this.state.isLoading && <Loader />}
+        {isLoading && <Loader />}
       </Box>
     );
   }
